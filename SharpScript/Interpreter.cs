@@ -17,6 +17,8 @@ namespace SharpScript
         public static Queue<List<string>> EvaluateParens(List<string> expression)
         {
             var calcOrder = new Queue<List<string>>();
+            var valueMap = new Dictionary<string, float>();
+            var termMap = new Dictionary<string, List<String>>();
             var parenL = new Stack<int>();
             var parenOrder = new Queue<int>();
             var pairs = new Dictionary<int, int>();
@@ -26,7 +28,7 @@ namespace SharpScript
             {
                 if (expression[i].Equals("("))
                 {
-                    parenL.Push(i); 
+                    parenL.Push(i);
                 }
                 else if (expression[i].Equals(")"))
                 {
@@ -43,7 +45,9 @@ namespace SharpScript
             }
 
             var expressionCopy = new List<string>(expression);
-            
+
+            int parenCount = 0;
+
             foreach (var leftParen in parenOrder)
             {
                 List<string> calc = new List<string>();
@@ -57,10 +61,32 @@ namespace SharpScript
                     expressionCopy[i] = "-X-";
                 }
                 calcOrder.Enqueue(calc);
+
+                string parenNum = "ParenNum" + parenCount;
+                termMap.Add(parenNum, calc);
+
+                expressionCopy[leftParen] = parenNum;
+                expressionCopy[rightParen] = "-X-";
+                parenCount++;
             }
 
+
             return calcOrder;
-        
+
+        }
+
+        private class ExpressionMap
+        {
+            private Dictionary<string, float> ValueMap { get; set; }
+            private Dictionary<string, List<String>> TermMap { get; set; }
+            private Queue<string> ExpressionOrder { get; set; }
+
+            public ExpressionMap(Dictionary<string, float> valueMap, Queue<string> expressionOrder, Dictionary<string, List<string>> termMap)
+            {
+                ValueMap = valueMap;
+                ExpressionOrder = expressionOrder;
+                TermMap = termMap;
+            }
         }
     }
 }
