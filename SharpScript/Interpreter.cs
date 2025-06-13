@@ -51,8 +51,10 @@ namespace SharpScript
             foreach (var leftParen in parenOrder)
             {
                 List<string> calc = new List<string>();
+                List<int> commaList = new List<int>();
                 var rightParen = pairs.GetValueOrDefault(leftParen, -1);
                 if (rightParen == -1) throw new ArgumentException("Error in Paren calculation");
+                // TODO Add comma separating
                 for (int i = leftParen + 1; i < rightParen; i++)
                 {
                     if (expressionCopy[i].Equals("-X-")) continue;
@@ -60,14 +62,37 @@ namespace SharpScript
                     calc.Add(token);
                     expressionCopy[i] = "-X-";
                 }
-                calcOrder.Enqueue(calc);
 
-                string parenNum = "ParenNum" + parenCount;
-                termMap.Add(parenNum, calc);
+                var subdividedWithCommas = new List<List<string>>();
 
-                expressionCopy[leftParen] = parenNum;
-                expressionCopy[rightParen] = "-X-";
-                parenCount++;
+                var currentTerm = new List<string>();
+
+                // Subdivide by comma
+                // There's definitely a way to do this in line with initial term creation...
+
+                int count = leftParen + 1;
+
+                foreach (var token in calc)
+                {
+                    if (!token.Equals(","))
+                    {
+                        currentTerm.Add(token);
+                    }
+                    else
+                    {
+                        calcOrder.Enqueue(currentTerm);
+                        string parenNum = "ParenNum" + parenCount;
+                        expressionCopy[count] = parenNum;
+                        currentTerm = new List<string>();
+                        parenCount++;
+                    }
+                    count++;
+                }
+
+                calcOrder.Enqueue(currentTerm);
+                string parenNumFinal = "ParenNum" + parenCount;
+                expressionCopy[count] = parenNumFinal;
+
             }
 
 
